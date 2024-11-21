@@ -1,0 +1,108 @@
+#include "console.h"
+#include "portmap.h"
+#include <stdint.h>
+
+// VGA buffer pointer
+static uint16_t* const VGA_BUFFER = (uint16_t*) 0xB8000;
+static const int VGA_WIDTH = 80;
+static const int VGA_HEIGHT = 25;
+
+// Keep track of cursor position
+static int cursor_x = 0;
+static int cursor_y = 0;
+static unsigned char current_color = 7; // Default to light gray
+
+// Update hardware cursor position
+static void update_cursor(void) {
+    uint16_t pos = cursor_y * VGA_WIDTH + cursor_x;
+
+    // Tell VGA we are setting the high cursor byte
+    outb(VGA_CTRL_REGISTER, VGA_CURSOR_HIGH);
+    outb(VGA_DATA_REGISTER, (uint8_t)((pos >> 8) & 0xFF));
+
+    // Tell VGA we are setting the low cursor byte
+    outb(VGA_CTRL_REGISTER, VGA_CURSOR_LOW);
+    outb(VGA_DATA_REGISTER, (uint8_t)(pos & 0xFF));
+}
+
+void clear_terminal(void) {
+    for (int y = 0; y < VGA_HEIGHT; y++) {
+        for (int x = 0; x < VGA_WIDTH; x++) {
+            const int index = y * VGA_WIDTH + x;
+            VGA_BUFFER[index] = (uint16_t) ' ' | (uint16_t) current_color << 8;
+        }
+    }
+    cursor_x = 0;
+    cursor_y = 0;
+    update_cursor();
+}
+
+static void scroll(void) {
+    if (cursor_y >= VGA_HEIGHT) {
+        // Move each line up
+        for (int y = 0; y < VGA_HEIGHT - 1; y++) {
+            for (int x = 0; x < VGA_WIDTH; x++) {
+                VGA_BUFFER[y * VGA_WIDTH + x] = VGA_BUFFER[(y + 1) * VGA_WIDTH + x];
+            }
+        }
+
+        // Clear bottom line
+        for (int x = 0; x < VGA_WIDTH; x++) {
+            const int index = (VGA_HEIGHT - 1) * VGA_WIDTH + x;
+            VGA_BUFFER[index] = (uint16_t) ' ' | (uint16_t) current_color << 8;
+        }
+
+        cursor_y = VGA_HEIGHT - 1;
+    }
+}
+
+static void print_char(char c) {
+    if (c == '\n') {
+        cursor_x = 0;
+        cursor_y++;
+        scroll();
+    } else {
+        const int index = cursor_y * VGA_WIDTH + cursor_x;
+        VGA_BUFFER[index] = (uint16_t) c | (uint16_t) current_color << 8;
+        cursor_x++;
+        
+        if (cursor_x >= VGA_WIDTH) {
+            cursor_x = 0;
+            cursor_y++;
+            scroll();
+        }
+    }
+    update_cursor();
+}
+
+void print_line(const char* message) {
+    while (*message != 0) {
+        print_char(*message++);
+    }
+    print_char('\n');
+}
+
+void set_terminal_font_color(unsigned char color) {
+    current_color = color;
+}
+
+void print_character_with_color(char c, unsigned char color) {
+    unsigned char prev_color = current_color;
+    current_color = color;
+    print_char(c);
+    current_color = prev_color;
+}
+
+void print_string_with_color(const char* message, unsigned char color) {
+    unsigned char prev_color = current_color;
+    current_color = color;
+    while (*message != 0) {
+        print_char(*message++);
+    }
+    current_color = prev_color;
+}
+
+void print_line_with_color(const char* message, unsigned char color) {
+    print_string_with_color(message, color);
+    print_char('\n');
+}

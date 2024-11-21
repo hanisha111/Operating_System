@@ -1,0 +1,61 @@
+#include "console.h"
+#include <stdint.h>
+
+// Test function to demonstrate cursor movement
+static void test_cursor_movement(void) {
+    clear_terminal();
+    
+    // Print a pattern to test cursor movement
+    const char* patterns[] = {
+        "First line ->",
+        "   Second line ->",
+        "      Third line ->",
+        "         Fourth line ->"
+    };
+    
+    // Print with different colors and indentation to test cursor positioning
+    print_line_with_color(patterns[0], RED);
+    print_line_with_color(patterns[1], GREEN);
+    print_line_with_color(patterns[2], BLUE);
+    print_line_with_color(patterns[3], YELLOW);
+    
+    // Test cursor movement with single characters
+    print_character_with_color('*', CYAN);
+    print_character_with_color('*', CYAN);
+    print_character_with_color('*', CYAN);
+    print_line(""); // New line to test cursor wrap
+    
+    // Test string printing with cursor updates
+    print_string_with_color("Testing cursor movement...", WHITE);
+    print_line(""); // Force cursor to next line
+    
+    // Test multi-line string with different colors
+    print_line_with_color("=== Cursor Test Complete ===", BROWN);
+}
+
+void kernel_main(void) {
+    // Initialize terminal
+    clear_terminal();
+    
+    // Set initial color
+    set_terminal_font_color(WHITE);
+    
+    // Print welcome message
+    print_line_with_color("Welcome to MyOS!", GREEN);
+    print_line_with_color("Testing VGA cursor functionality...", YELLOW);
+    print_line(""); // Empty line
+    
+    // Run cursor movement test
+    test_cursor_movement();
+    
+    // Print final message
+    print_line("");
+    print_line_with_color("Kernel initialized successfully.", CYAN);
+    
+    // Test cursor at different screen positions
+    for(int i = 0; i < 5; i++) {
+        print_string_with_color("Position test ", BLUE);
+        print_character_with_color('0' + i, RED);
+        print_line("");
+    }
+}

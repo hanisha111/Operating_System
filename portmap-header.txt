@@ -1,0 +1,9 @@
+#ifndef MYOS_DEVICE_PORTMAP_H
+#define MYOS_DEVICE_PORTMAP_H
+
+#include <stdint.h>
+
+// Write a byte to an I/O port
+void outb(uint16_t port, uint8_t value);
+
+#endif // MYOS_DEVICE_PORTMAP_H

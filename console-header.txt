@@ -1,0 +1,27 @@
+#ifndef MYOS_CONSOLE_H
+#define MYOS_CONSOLE_H
+
+// Color definitions
+#define BLACK 0
+#define BLUE 1
+#define GREEN 2
+#define CYAN 3
+#define RED 4
+#define BROWN 5
+#define YELLOW 14
+
+// VGA buffer related constants
+#define VGA_CTRL_REGISTER 0x3D4
+#define VGA_DATA_REGISTER 0x3D5
+#define VGA_CURSOR_HIGH 14
+#define VGA_CURSOR_LOW 15
+
+// Function declarations
+void clear_terminal(void);
+void print_line(const char* message);
+void set_terminal_font_color(unsigned char color);
+void print_character_with_color(char c, unsigned char color);
+void print_string_with_color(const char* message, unsigned char color);
+void print_line_with_color(const char* message, unsigned char color);
+
+#endif // MYOS_CONSOLE_H

@@ -1,0 +1,9 @@
+[BITS 32]
+global _start
+
+section .text
+_start:
+    extern kernel_main    ; Reference to our main C kernel function
+    call kernel_main     ; Call our main function
+    cli                  ; Disable interrupts
+    hlt                  ; Halt the CPU
